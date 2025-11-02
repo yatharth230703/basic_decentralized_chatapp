@@ -8,7 +8,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.8.0",
     "firebase": "^10.0.0",
-    "gun": "^0.2020.1243",
+    "gun": "^0.2020.1241",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
@@ -23,7 +23,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "relay": "node relay-server.js",
+    "dev": "npm run relay & npm start"
   },
   "eslintConfig": {
     "extends": [

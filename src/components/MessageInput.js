@@ -16,18 +16,25 @@ const MessageInput = () => {
     setSending(true);
     try {
       const messageId = uuidv4();
-      const chatroom = gun.get('chatroom').get('messages').get(messageId);
+      const messageData = {
+        id: messageId,
+        text: message.trim(),
+        sender: user.displayName || user.email,
+        userId: user.uid,
+        timestamp: Date.now(),
+      };
       
-      await new Promise((resolve) => {
-        chatroom.put({
-          id: messageId,
-          text: message.trim(),
-          sender: user.displayName || user.email,
-          userId: user.uid,
-          timestamp: Date.now(),
-        }, resolve);
-      });
+      // Save to Gun.js - Gun.js handles sync automatically
+      const chatroom = gun.get('chatroom').get('messages');
+      const messageNode = chatroom.get(messageId);
+      
+      // Put message - Gun.js will sync to all peers automatically
+      messageNode.put(messageData);
+      
+      // Give Gun.js a moment to process
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
+      console.log('Message sent:', messageData);
       setMessage('');
     } catch (error) {
       console.error('Error sending message:', error);

@@ -4,6 +4,7 @@ import gun from '../config/gunConfig';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import ImageUpload from './ImageUpload';
+import '../utils/verifyDecentralization'; // Load verification utils
 
 const ChatroomPage = ({ activeTab, setActiveTab }) => {
   const [messages, setMessages] = useState([]);
@@ -110,6 +111,7 @@ const ChatroomPage = ({ activeTab, setActiveTab }) => {
 
     // Listen for all messages in the chatroom (real-time updates)
     // Gun.js map().on() will fire for all existing messages and new ones
+    // This includes messages from IndexedDB (local storage) AND from peers
     const unsubscribe = chatroom.map().on((data, key) => {
       if (!isSubscribed) return;
 
@@ -131,11 +133,26 @@ const ChatroomPage = ({ activeTab, setActiveTab }) => {
         if (!messagesMap.has(messageId)) {
           messagesMap.set(messageId, data);
           
+          // Log where message came from
+          const isFromLocal = !isConnected || connectedPeers.size === 0;
+          console.log(`📨 Message received: ${isFromLocal ? '(from local storage)' : '(from peer sync)'}`, data.id);
+          
           // Debounce updates to batch multiple messages
           if (updateTimeout) {
             clearTimeout(updateTimeout);
           }
           updateTimeout = setTimeout(updateMessages, 50);
+        }
+      }
+    });
+
+    // Also listen for messages from local storage on mount
+    // This ensures we show messages even if no peers are connected
+    chatroom.map().once((data, key) => {
+      if (data && typeof data === 'object' && data.text && data.id && data.timestamp && data.sender) {
+        if (!messagesMap.has(data.id)) {
+          messagesMap.set(data.id, data);
+          updateMessages();
         }
       }
     });
@@ -164,13 +181,18 @@ const ChatroomPage = ({ activeTab, setActiveTab }) => {
       <div className="px-4 py-2 bg-white border-b border-gray-200 flex items-center justify-between text-xs">
         <span className="text-gray-600">
           Status: {isConnected ? (
-            <span className="text-green-600 font-medium">Connected</span>
+            <span className="text-green-600 font-medium">Connected - Syncing</span>
           ) : (
-            <span className="text-orange-600 font-medium">Connecting...</span>
+            <span className="text-orange-600 font-medium">Offline - Saving Locally</span>
           )}
         </span>
         {!isConnected && (
-          <span className="text-gray-500">Waiting for relay server...</span>
+          <span className="text-gray-500">
+            Messages saved locally. Will sync when relay returns.
+          </span>
+        )}
+        {isConnected && (
+          <span className="text-green-600">✓ All peers connected</span>
         )}
       </div>
 

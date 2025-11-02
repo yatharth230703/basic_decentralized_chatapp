@@ -4,6 +4,12 @@
  * This server acts as a relay peer for Gun.js clients to connect through.
  * Run this server locally on port 5001 to enable peer-to-peer synchronization.
  * 
+ * IMPORTANT: This server does NOT store messages or images!
+ * - It only helps browsers discover each other (signaling)
+ * - All data is stored locally in each browser's IndexedDB
+ * - Messages sync directly between browsers via WebRTC
+ * - This server is just a "phone book" - not a post office!
+ * 
  * Usage: node relay-server.js
  */
 

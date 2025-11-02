@@ -15,6 +15,7 @@ const gun = Gun({
   ],
   localStorage: true, // Enable IndexedDB storage
   radisk: true, // Enable disk storage
+  multicast: true, // Enable local network peer discovery (works even without relay)
 });
 
 // Log connection status for debugging
